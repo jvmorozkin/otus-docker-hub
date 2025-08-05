@@ -1,6 +1,8 @@
 # otus-docker-hub
 This is training repo for course. Second homework.
 Mermaid diagramm:
+
+```mermaid
 graph TD
     Client((Клиент Браузер / Мобильное приложение)) --> |HTTP| API_Gateway[API Gateway - Spring Cloud Gateway]
 
@@ -60,7 +62,7 @@ graph TD
     classDef service fill:#9FCAE6,stroke:#2171B5,stroke-width:2px,color:black;
     classDef gateway fill:#FFD700,stroke:#333,stroke-width:2px,color:black;
     classDef message fill:#E57373,stroke:#333,stroke-width:2px,color:white;
-
+```
     class ProductCatalogService,ShoppingCartService,OrderService,InventoryService,PaymentService,NotificationService service
     class API_Gateway gateway
     class Auth_Service auth
