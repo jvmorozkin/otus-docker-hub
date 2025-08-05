@@ -1,5 +1,8 @@
 # otus-docker-hub
 This is training repo for course. Second homework.
+
+Here is minimal-health-service on Spring Boot with gradle
+
 Mermaid diagramm:
 
 ```mermaid
