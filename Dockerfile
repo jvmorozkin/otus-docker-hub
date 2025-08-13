@@ -11,8 +11,8 @@ RUN ./gradlew build -x test
 
 # Копируем ТОЛЬКО исполняемый JAR (не -plain.jar)
 RUN mkdir -p /build && \
-    cp build/libs/otus-docker-hub-0.0.1.jar /build/app.jar && \
-    echo "✅ Скопирован исполняемый JAR: otus-docker-hub-0.0.1.jar → app.jar"
+    cp build/libs/otus-docker-hub-0.0.3.jar /build/app.jar && \
+    echo "✅ Скопирован исполняемый JAR: otus-docker-hub-0.0.3.jar → app.jar"
 
 # Этап 2: Запуск
 FROM eclipse-temurin:17-jre-alpine

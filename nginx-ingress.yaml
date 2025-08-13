@@ -1,0 +1,11 @@
+controller:
+  kind: DaemonSet
+  hostPort:
+    enabled: true
+    ports:
+      http: 80
+      https: 443
+  service:
+    type: NodePort
+  reportNodeInternalIp: true
+  ingressClass: nginx
