@@ -3,19 +3,21 @@ kind: Ingress
 metadata:
   name: otus-app-ingress
   namespace: m
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
-  labels:
-    app: otus-app
 spec:
   ingressClassName: nginx
   rules:
     - host: arch.homework
       http:
         paths:
+          - path: /api/v1/
+            pathType: Prefix  # Все пути, начинающиеся с /api/v1/
+            backend:
+              service:
+                name: otus-app-service
+                port:
+                  number: 80
           - path: /health
-            pathType: Prefix
+            pathType: Exact  # Точное совпадение
             backend:
               service:
                 name: otus-app-service

@@ -1,16 +1,17 @@
 server:
   port: 8000
+
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:otus}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
     hikari:
       connection-timeout: 20000
       maximum-pool-size: 5
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:

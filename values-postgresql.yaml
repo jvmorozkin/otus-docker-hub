@@ -1,0 +1,10 @@
+global:
+  postgresql:
+    auth:
+      username: postgres
+      password: postgres
+      database: otus
+
+primary:
+  persistence:
+    enabled: false

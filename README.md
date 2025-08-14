@@ -71,7 +71,7 @@ graph TD
     class Auth_Service auth
     class Kafka message
 
-# OTUS Docker & Kubernetes Homework
+# OTUS #2 Docker & Kubernetes Homework
 
 Минимальное Spring Boot приложение, развернутое в Kubernetes с помощью Ingress-NGINX.  
 Отвечает на `GET /health` с `{"status": "OK"}`.
@@ -84,13 +84,12 @@ graph TD
 
 ```powershell
 Все команды выполнять в корне проекта!
+minikube start --driver=docker
 
 kubectl create namespace m
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx/
 helm repo update
 helm install nginx ingress-nginx/ingress-nginx -n m -f nginx-ingress.yaml
-
-minikube start --driver=docker
 
 kubectl apply -f k8s/
 Проверяем что всё поднялось и проставился ADDRESS у nginx-ingress
@@ -104,3 +103,30 @@ get services -n m
 minikube tunnel
 
 Команда для проверки: curl -v http://arch.homework/health
+```
+# OTUS #3 Работа с Helm
+
+Простейшее CRUD Spring Boot приложение, развернутое в Kubernetes с помощью Ingress-NGINX.
+В корне проекта постман коллекция CRUD_test.postman_collection.json
+
+## 🚀 Запуск приложения
+
+```powershell
+Все команды выполнять в корне проекта!
+minikube start --driver=docker
+
+kubectl create namespace m
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx/
+helm repo update
+helm install nginx ingress-nginx/ingress-nginx -n m -f nginx-ingress.yaml
+kubectl apply -f k8s/
+Проверяем что всё поднялось и проставился ADDRESS у nginx-ingress
+kubectl get ingresses,pods,services -n m
+
+Запускаем тунель в отдельной командной строке
+minikube tunnel
+
+Команды для базовой проверки: 
+curl -v http://arch.homework/health
+curl -v http://arch.homework/api/v1/user/1
+```

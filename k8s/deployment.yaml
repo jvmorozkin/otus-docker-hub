@@ -17,9 +17,15 @@ spec:
     spec:
       containers:
         - name: otus-app
-          image: jvmisalive/otus-docker-hub:0.0.3
+          image: jvmisalive/otus-docker-hub:0.0.5
           ports:
             - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: db-secret
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
           livenessProbe:
             httpGet:
               path: /health
@@ -32,3 +38,7 @@ spec:
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: config-volume
+          configMap:
+            name: app-config
