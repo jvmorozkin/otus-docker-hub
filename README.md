@@ -117,6 +117,7 @@ minikube start --driver=docker
 
 kubectl create namespace m
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx/
+helm repo add bitnami https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
 helm repo update
 helm install nginx ingress-nginx/ingress-nginx -n m -f nginx-ingress.yaml
 kubectl apply -f k8s/
@@ -129,4 +130,38 @@ minikube tunnel
 Команды для базовой проверки: 
 curl -v http://arch.homework/health
 curl -v http://arch.homework/api/v1/user/1
+Логи сервисов
+kubectl logs -n m deploy/otus-app -f
 ```
+
+```powershell
+Команды для запуска helm чарта
+
+minikube start --driver=docker
+
+helm dependency update otus-app/
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx/
+helm repo update
+helm upgrade --install nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace -f nginx-ingress.yaml
+#Ждём пока поднимется nginx controller
+Start-Sleep -Seconds 50
+#Проверяем что всё поднялось и проставился ADDRESS у nginx-ingress
+kubectl get ingresses,pods,services -n ingress-nginx
+kubectl get ingresses,pods,services -n m
+
+# Устанавливаем приложение
+helm upgrade --install otus-app otus-app/ -n m --create-namespace --wait
+kubectl get ingresses,pods,services -n m
+
+#Запускаем тунель в отдельной командной строке
+minikube tunnel
+
+#Доп команды для отладки:
+kubectl get namespace m -o yaml
+kubectl get deployment m -o yaml
+kubectl get ingresses,pods,services -n m
+kubectl logs -n m deploy/otus-app -f
+kubectl logs -n m otus-app-postgresql-0 -f
+kubectl logs -n m otus-app-7b9d97bcfc-rntgq -f
+kubectl get secret -n m db-secret -o yaml
+helm uninstall otus-app -n m

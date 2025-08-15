@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  application.yml: |
+    server:
+      port: 8000
+    spring:
+      datasource:
+        url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+        username: ${DB_USER}
+        password: ${DB_PASSWORD}
+        hikari:
+          connection-timeout: 20000
+          maximum-pool-size: 5
+      jpa:
+        hibernate:
+          ddl-auto: create
+        show-sql: true
+        properties:
+          hibernate:
+            format_sql: true
+            jdbc:
+              lob:
+                non_contextual_creation: true
+    logging:
+      level:
+        root: DEBUG
+        org.hibernate.SQL: INFO
+        org.hibernate.type: INFO

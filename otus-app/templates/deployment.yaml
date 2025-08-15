@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otus-app
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # Важно для миграций БД
+  selector:
+    matchLabels:
+      app: otus-app
+  template:
+    metadata:
+      labels:
+        app: otus-app
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: postgres:13-alpine
+          command: ['sh', '-c',
+                    'until pg_isready -h otus-app-postgresql -U postgres; do sleep 2; done']
+          envFrom:
+            - secretRef:
+                name: db-secret
+      containers:
+        - name: otus-app
+          image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: db-secret
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.app.probes.readiness.path | quote }}
+              port: 8000
+            initialDelaySeconds: {{ .Values.app.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.app.probes.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.app.probes.liveness.path | quote }}
+              port: 8000
+            initialDelaySeconds: {{ .Values.app.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.app.probes.liveness.periodSeconds }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+          ports:
+            - containerPort: 8000
+      volumes:
+        - name: config-volume
+          configMap:
+            name: app-config
