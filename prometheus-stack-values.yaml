@@ -1,0 +1,89 @@
+grafana:
+  adminPassword: "admin"
+  persistence:
+    enabled: true
+    size: 10Gi
+  plugins:
+    - grafana-piechart-panel
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana.arch.homework
+    path: /
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+  dashboards:
+    default:
+      otus-app-dashboard:
+        gnetId: null
+        datasource: "Prometheus"
+        folder: ''
+        editable: true
+        options: {}
+        json: |
+          {{ .Files.Get "grafana-dashboard-otus.yaml" | indent 10 }}
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+
+    serviceMonitorNamespaceSelector: {}
+    podMonitorNamespaceSelector: {}
+
+    # Убираем additionalScrapeConfigs, используем ServiceMonitor
+    # additionalScrapeConfigs: []
+
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - alertmanager.arch.homework
+    path: /
+
+kubeStateMetrics:
+  enabled: true
+
+prometheus-node-exporter:
+  enabled: true
+
+defaultRules:
+  create: true
+
+kubeControllerManager:
+  enabled: true
+
+kubeEtcd:
+  enabled: true
+
+kubeScheduler:
+  enabled: true
+
+coreDns:
+  enabled: true
+
+kubeProxy:
+  enabled: true
+
+kubelet:
+  enabled: true

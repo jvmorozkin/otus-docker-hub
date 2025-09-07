@@ -7,7 +7,7 @@ COPY gradlew settings.gradle build.gradle ./
 COPY src ./src
 
 # Собираем проект
-RUN ./gradlew build -x test
+RUN ./gradlew clean build -x test
 
 # Копируем ТОЛЬКО исполняемый JAR (не -plain.jar)
 RUN mkdir -p /build && \

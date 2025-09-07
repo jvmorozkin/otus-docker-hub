@@ -3,11 +3,14 @@ kind: Service
 metadata:
   name: otus-app-service
   namespace: {{ .Values.global.namespace | quote }}
+  labels:
+    app: otus-app
 spec:
   type: {{ .Values.app.service.type }}
   selector:
     app: otus-app
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: {{ .Values.app.service.port }}
-      targetPort: {{ .Values.app.service.targetPort }}
+      targetPort: 8000

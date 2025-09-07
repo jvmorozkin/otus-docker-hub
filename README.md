@@ -160,8 +160,99 @@ minikube tunnel
 kubectl get namespace m -o yaml
 kubectl get deployment m -o yaml
 kubectl get ingresses,pods,services -n m
-kubectl logs -n m deploy/otus-app -f
+kubectl logs -n m otus-app-65b5f4d85b-74lgv -f
 kubectl logs -n m otus-app-postgresql-0 -f
-kubectl logs -n m otus-app-7b9d97bcfc-rntgq -f
+kubectl logs -n ingress-nginx nginx-ingress-nginx-controller-pj5lb -f
 kubectl get secret -n m db-secret -o yaml
 helm uninstall otus-app -n m
+```
+# OTUS #4 Grafana/Prometheus
+
+## 🚀 Запуск приложения
+
+```powershell
+# 1. Запускаем Minikube
+minikube start --driver=docker
+
+# 2. Создаем неймспейсы
+kubectl create namespace ingress-nginx
+kubectl create namespace m
+kubectl create namespace monitoring
+
+# 3. Обновляем репозитории Helm
+helm repo update
+
+# 4. Устанавливаем NGINX Ingress Controller
+helm upgrade --install nginx ingress-nginx/ingress-nginx `
+  -n ingress-nginx `
+  -f nginx-ingress.yaml `
+  --wait
+
+# 5. Ждем полного запуска NGINX
+Start-Sleep -Seconds 60
+
+# 6. Отключаем webhook валидацию
+kubectl delete validatingwebhookconfiguration nginx-ingress-nginx-admission --ignore-not-found
+
+# 7. Создаем сервис для метрик NGINX
+kubectl apply -f nginx-metrics-service.yaml
+
+# 8. Устанавливаем Prometheus Stack
+helm upgrade --install prometheus-stack prometheus-community/kube-prometheus-stack `
+  -n monitoring `
+  --set grafana.adminPassword=admin `
+  --set grafana.ingress.enabled=true `
+  --set grafana.ingress.hosts[0]=grafana.arch.homework `
+  --set grafana.ingress.ingressClassName=nginx `
+  --wait
+
+# 9. Создаем ServiceMonitor для NGINX
+kubectl apply -f nginx-service-monitor.yaml
+
+# 10. Добавляем дашборд в Grafana
+kubectl apply -f grafana-dashboard-otus.yaml
+
+# 11. Обновляем зависимости приложения
+helm dependency update otus-app/
+
+# 12. Устанавливаем приложение
+helm upgrade --install otus-app otus-app/ `
+  -n m `
+  --wait
+
+# 13. Добавляем записи в hosts файл
+$hostsContent = @"
+127.0.0.1 arch.homework
+127.0.0.1 grafana.arch.homework
+127.0.0.1 alertmanager.arch.homework
+127.0.0.1 prometheus.arch.homework
+"@
+Add-Content -Path "C:\Windows\System32\drivers\etc\hosts" -Value $hostsContent -Force
+
+# 14. Запускаем Minikube tunnel в ОТДЕЛЬНОМ окне
+Start-Process -FilePath "minikube" -ArgumentList "tunnel" -WindowStyle Normal
+
+# 15. Перезапускаем Grafana для применения дашборда
+kubectl rollout restart deployment prometheus-stack-grafana -n monitoring
+
+# 16. Ждем перезапуска Grafana
+Start-Sleep -Seconds 30
+
+# 17. Проверяем все компоненты
+kubectl get pods -A
+kubectl get svc -A
+kubectl get ingress -A
+kubectl get servicemonitors -A
+
+# 18. Получаем пароль Grafana
+$grafanaPassword = kubectl get secret -n monitoring prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+echo "Grafana password: $grafanaPassword"
+
+# 19. Проверяем приложение
+curl -v http://arch.homework/health
+curl -v http://arch.homework/api/v1/user/1
+
+echo "Установка завершена!"
+echo "Приложение: http://arch.homework"
+echo "Grafana: http://grafana.arch.homework (admin/$grafanaPassword)"
+```

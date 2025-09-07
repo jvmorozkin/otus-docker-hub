@@ -9,3 +9,19 @@ controller:
     type: NodePort
   reportNodeInternalIp: true
   ingressClass: nginx
+
+  # Включаем метрики
+  metrics:
+    enabled: true
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 10254
+      targetPort: 10254
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
+
+# Указываем правильный неймспейс для установки
+namespace: ingress-nginx
+createNamespace: true

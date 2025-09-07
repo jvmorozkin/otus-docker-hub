@@ -1,0 +1,72 @@
+# Global values
+global:
+  namespace: m
+
+# Namespace configuration
+namespace:
+  name: m
+  create: true
+  labels: {}
+  annotations: {}
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        username: "postgres"
+        password: "postgres"
+        database: "otus"
+  primary:
+    service:
+      port: 5432
+    persistence:
+      enabled: false
+
+# Application configuration
+app:
+  image:
+    repository: jvmisalive/otus-docker-hub
+    tag: 0.0.8
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+  ingress:
+    enabled: true
+    className: nginx
+    host: arch.homework
+    paths:
+      - path: /error
+        pathType: Exact
+      - path: /api/v1/
+        pathType: Prefix
+      - path: /health
+        pathType: Exact
+      - path: /actuator
+        pathType: Prefix
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  probes:
+    liveness:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readiness:
+      path: /health
+      initialDelaySeconds: 5
+      periodSeconds: 10
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true

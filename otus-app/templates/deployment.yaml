@@ -3,9 +3,9 @@ kind: Deployment
 metadata:
   name: otus-app
 spec:
-  replicas: 1
+  replicas: {{ .Values.app.replicaCount }}
   strategy:
-    type: Recreate  # Важно для миграций БД
+    type: Recreate
   selector:
     matchLabels:
       app: otus-app
@@ -13,6 +13,11 @@ spec:
     metadata:
       labels:
         app: otus-app
+        {{- include "otus-app.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
       initContainers:
         - name: wait-for-db
@@ -26,6 +31,11 @@ spec:
         - name: otus-app
           image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
           imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          env:
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "health,info,prometheus"
+            - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+              value: "true"
           envFrom:
             - secretRef:
                 name: db-secret
@@ -45,7 +55,10 @@ spec:
             - name: config-volume
               mountPath: /config
           ports:
-            - containerPort: 8000
+            - name: http
+              containerPort: 8000
+          resources:
+            {{- toYaml .Values.app.resources | nindent 12 }}
       volumes:
         - name: config-volume
           configMap:

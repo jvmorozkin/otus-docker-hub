@@ -2,6 +2,8 @@ package com.example.otus.controller;
 
 import com.example.otus.model.User;
 import com.example.otus.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,4 +35,11 @@ public class UserController {
     public void deleteUser(@PathVariable Long userId) {
         userRepository.deleteById(userId);
     }
+
+    @GetMapping("/error")
+    public ResponseEntity<String> error() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Internal Server Error");
+    }
+
 }
