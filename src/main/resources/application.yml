@@ -38,3 +38,6 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
+jwt:
+  secret: "mySuperSecretKeyForJWTTokenGeneration123!"
+  expiration: 3600000 # 1 час
