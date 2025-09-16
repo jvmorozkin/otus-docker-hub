@@ -171,6 +171,7 @@ helm uninstall otus-app -n m
 ## 🚀 Запуск приложения
 
 ```powershell
+# В этом задании использовать 0.0.9 версию
 # 1. Запускаем Minikube
 minikube start --driver=docker
 
@@ -220,6 +221,8 @@ helm upgrade --install otus-app otus-app/ `
   -n m `
   --wait
 
+minikube tunnel
+
 # 13. Добавляем записи в hosts файл
 $hostsContent = @"
 127.0.0.1 arch.homework
@@ -255,4 +258,86 @@ curl -v http://arch.homework/api/v1/user/1
 echo "Установка завершена!"
 echo "Приложение: http://arch.homework"
 echo "Grafana: http://grafana.arch.homework (admin/$grafanaPassword)"
+```
+# OTUS #5 API Gateway
+![img.png](img.png)
+
+## 🚀 Запуск приложения
+```powershell
+## Команды для сборки
+
+# Сборка проекта
+./gradlew clean build -x test
+
+# Собираем Docker образ
+docker build -t jvmisalive/otus-docker-hub:0.0.15 .
+
+# Пушим в Docker Hub
+docker push jvmisalive/otus-docker-hub:0.0.15
+
+# Пулим из Docker Hub
+docker pull jvmisalive/otus-docker-hub:0.0.15
+
+## Команды для запуска
+
+# 1. Запускаем Minikube
+minikube start --driver=docker
+
+# 2. Создаем неймспейсы
+kubectl create namespace ingress-nginx
+kubectl create namespace m
+kubectl create namespace monitoring
+
+# 3. Обновляем репозитории Helm
+helm repo update
+
+# 4. Устанавливаем NGINX Ingress Controller
+helm upgrade --install nginx ingress-nginx/ingress-nginx `
+  -n ingress-nginx `
+  -f nginx-ingress.yaml `
+  --wait
+
+# 5. Ждем полного запуска NGINX
+Start-Sleep -Seconds 60
+
+# 6. Отключаем webhook валидацию
+kubectl delete validatingwebhookconfiguration nginx-ingress-nginx-admission --ignore-not-found
+
+# 7. Создаем сервис для метрик NGINX
+kubectl apply -f nginx-metrics-service.yaml
+
+# 8. Устанавливаем Prometheus Stack
+helm upgrade --install prometheus-stack prometheus-community/kube-prometheus-stack `
+  -n monitoring `
+  --set grafana.adminPassword=admin `
+  --set grafana.ingress.enabled=true `
+  --set grafana.ingress.hosts[0]=grafana.arch.homework `
+  --set grafana.ingress.ingressClassName=nginx `
+  --wait
+
+# 9. Создаем ServiceMonitor для NGINX
+kubectl apply -f nginx-service-monitor.yaml
+
+# 10. Добавляем дашборд в Grafana
+kubectl apply -f grafana-dashboard-otus.yaml
+
+# 11. Обновляем зависимости приложения
+helm dependency update otus-app/
+
+# 12. Устанавливаем приложение
+helm upgrade --install otus-app otus-app/ `
+  -n m `
+  --wait
+
+# Запускаем туннель в отдельном окне
+minikube tunnel
+
+# Просмотр логов в отдельном окне
+kubectl logs -n m deploy/otus-app -f
+
+# Запускаем постман коллекцию
+newman run auth-tests.postman_collection.json `
+--reporters cli `
+--reporter-cli-show-request-body `
+--reporter-cli-show-response-body
 ```

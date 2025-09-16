@@ -1,15 +1,22 @@
-{{- if .Values.app.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: otus-app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS, DELETE"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
 spec:
   ingressClassName: {{ .Values.app.ingress.className | quote }}
   rules:
     - host: {{ .Values.app.ingress.host | quote }}
       http:
         paths:
-          {{- range .Values.app.ingress.paths }}
+      {{- range .Values.app.ingress.paths }}
           - path: {{ .path | quote }}
             pathType: {{ .pathType | quote }}
             backend:
@@ -17,5 +24,4 @@ spec:
                 name: otus-app-service
                 port:
                   number: {{ $.Values.app.service.port }}
-          {{- end }}
-{{- end }}
+      {{- end }}

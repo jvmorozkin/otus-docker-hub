@@ -2,7 +2,7 @@ apiVersion: v2
 name: otus-app
 description: A Helm chart for Otus Spring Boot application
 version: 0.1.0
-appVersion: "0.0.9"
+appVersion: "0.0.15"
 dependencies:
   - name: postgresql
     version: 16.7.24
